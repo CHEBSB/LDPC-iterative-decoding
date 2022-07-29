@@ -3,7 +3,7 @@
 #include <math.h>
 
 #define iter_Max 100        // iteration limit of decoding
-#define bSNR_dB 2.411          // Eb/N0 in dB
+#define bSNR_dB 1.584          // Eb/N0 in dB
 
 typedef struct edge {
     int v;      // the var node it connects
@@ -66,7 +66,7 @@ int main(void)
     A = (int **)calloc(dc, sizeof(int *));
     for (i = 0; i < dc; i++) 
         A[i] = (int *)calloc(dc - 1, sizeof(int));
-    y = (double *)calloc(n, sizeof(int));
+    y = (double *)calloc(n, sizeof(double));
     col = (int **)calloc(n, sizeof(int *));
     row = (int **)calloc(r, sizeof(int *));
     V = (edge ***)calloc(n, sizeof(edge **));
@@ -86,7 +86,7 @@ int main(void)
     for (i = 0; i < n + r; i++)
         scanf("%d", &j);
     // for each column
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++)
         for (j = 0; j < dv; j++) {
             scanf("%d", &temp);
             col[i][j] = temp - 1;
@@ -94,15 +94,13 @@ int main(void)
             V[i][j]->v = i;
             V[i][j]->c = temp - 1;
         }
-    }
     // for each row
-    for (i = 0; i < r; i++) {
+    for (i = 0; i < r; i++) 
         for (j = 0; j < dc; j++) {
             scanf("%d", &temp);
             row[i][j] = temp - 1;
             C[i][j] = Edge(i, temp - 1);
         }
-    }
     // init A
     for (i = 0; i < dc; i++) {
         k = 0;
@@ -114,7 +112,7 @@ int main(void)
     }
     printf("n = %d r = %d dv = %d dc = %d\n", n, r, dv, dc);   // for debug
     // test until # of blocks with error reach 50
-    for (i = 0; err_block < 50 && err < 2000; i++) {
+    for (i = 0; err_block < 50; i++) {
         // generate decoder's input
         for (j = 0; j < n; j += 2) {
             normal();           // generate Gaussian noise
@@ -123,19 +121,19 @@ int main(void)
         }
         decode = iterDecod(y);
         if (decode == 1) {
-            err_block += 1;
-            err += (n - r);
-            printf("Failure at %d-th!\n", i);
+            // err_block += 1;
+            // err += (n - r);
+            printf("%d-th Failure at %d-th!\n", err_block + 1, i);
         }
-        else {
-            temp = 0;
-            for (j = 0; j < n - r; j++)
-                if (x_hat[j] != 0) {
-                    err++;
-                    temp = 1;
-                }
-            err_block += temp;
-        }
+        //else {
+        temp = 0;
+        for (j = 0; j < n - r; j++)
+            if (x_hat[j] != 0) {
+                err++;
+                temp = 1;
+            }
+        err_block += temp;
+        //}
         if (i % 100 == 0) printf("i = %d\terr: %d\n", i, err);
     }
     printf("BER = %lf * 10^-3\n", ((double)err) / (n - r) * 1000 / (i + 1));
